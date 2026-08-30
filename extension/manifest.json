@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Crunchyroll Enhancer – CrOptix",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Crunchyroll improvements and fixes: spoiler blur for unwatched episodes, filler/recap tags and a release calendar for your list.",
   "homepage_url": "https://github.com/stratumadev/croptix",
   "permissions": [
@@ -72,6 +72,7 @@
         "*://*.crunchyroll.com/*"
       ],
       "js": [
+        "features/bridge-main.js",
         "crunchyroll.js",
         "subtitle-octopus/subtitles-octopus.js",
         "katamari.js"

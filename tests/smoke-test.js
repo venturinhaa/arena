@@ -89,11 +89,19 @@ const CAL_EPS = [
   { id: "GREP6", ep: 6, avail: NEXT_M2.getTime() },
 ];
 
-async function mockFetch(input) {
+let authSeen = false;
+async function mockFetch(input, init = {}) {
   const href = String(input);
   const u = new URL(href);
+  const authHeader = init?.headers?.authorization ?? init?.headers?.Authorization ?? null;
   const j = (body) => ({ ok: true, status: 200, json: async () => body, headers: new Headers() });
-  if (u.pathname === "/accounts/v1/me") return j({ account_id: "ACC1" });
+  if (u.pathname === "/auth/v1/token") return j({ token_type: "Bearer", access_token: "TESTTOKEN" });
+  if (u.pathname === "/accounts/v1/me") {
+    // Realistic: the API only answers with a Bearer token attached.
+    if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) authSeen = true;
+    else return { ok: false, status: 401, json: async () => ({}), headers: new Headers() };
+    return j({ account_id: "ACC1" });
+  }
   if (u.pathname.startsWith("/content/v2/cms/objects/")) {
     const ids = u.pathname.split("/").pop().split(",");
     const data = [];
@@ -153,10 +161,11 @@ function buildWatchPage(id) {
     <body><main><h1 id="title">Episode</h1><div class="player"></div></main></body></html>`;
 }
 
-async function runScripts(dom) {
+async function runScripts(dom, { bridge = false } = {}) {
   const w = dom.window;
   w.chrome = chromeStub;
   w.fetch = mockFetch;
+  if (bridge) w.eval(read("features/bridge-main.js"));
   w.eval(read("features/utils.js"));
   w.eval(read("features/blur.js"));
   w.eval(read("features/fillers.js"));
@@ -178,9 +187,9 @@ function check(name, cond) {
   {
     const css = read("css/croptix-features.css");
     const dom = new JSDOM(buildSeriesPage(css), { url: "https://www.crunchyroll.com/series/GYTEST1", runScripts: "outside-only", pretendToBeVisual: true });
-    await runScripts(dom);
+    await runScripts(dom, { bridge: true });
     const d = dom.window.document;
-    await sleep(600); // extra wait for debounced scans / jikan queue
+    await sleep(900); // extra wait for debounced scans / jikan queue
 
     const thumb = (id) => d.querySelector(`#card-${id} a.thumb`);
     check("blur: unwatched EP3 blurred", thumb("GREP3").classList.contains("croptix-blur-ep"));
@@ -203,6 +212,8 @@ function check(name, cond) {
       toolbar.querySelector('[data-mode="all"]').click();
       check("filler: filter all shows cards again", d.defaultView.getComputedStyle(d.querySelector("#card-GREP1")).display !== "none");
     }
+
+    check("bridge: Bearer token attached to Crunchyroll API calls", authSeen);
 
     const fab = d.querySelector("#croptix-cal-fab");
     check("calendar: FAB exists", !!fab);
@@ -231,9 +242,9 @@ function check(name, cond) {
   // ---------------------------------------------------------------------------
   {
     const dom = new JSDOM(buildWatchPage(), { url: "https://www.crunchyroll.com/watch/GREP4", runScripts: "outside-only", pretendToBeVisual: true });
-    await runScripts(dom);
+    await runScripts(dom); // no bridge → crApi falls back to direct fetch
     const d = dom.window.document;
-    await sleep(800);
+    await sleep(2500);
     const flag = d.querySelector("#croptix-watch-fill-flag");
     check("watch: filler flag shown for filler episode", !!flag && /Filler/.test(flag.textContent));
     dom.window.close();

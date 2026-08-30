@@ -46,7 +46,10 @@ extension/
 ├── crunchyroll.js           # original MAIN-world fetch/XHR patches
 ├── katamari.js              # original subtitle/katamari module
 ├── config_init.js / mobile-fix.js
-├── features/                # NEW — added in 2.1.0
+├── features/                # NEW — added in 2.1.x
+│   ├── bridge-main.js       # MAIN-world auth bridge: captures/mints the
+│   │                        #   Crunchyroll API Bearer token and serves
+│   │                        #   authenticated API calls to the features
 │   ├── utils.js             # settings, caches, Crunchyroll & Jikan API, DOM scanning
 │   ├── blur.js              # unwatched-episode blur
 │   ├── fillers.js           # filler/recap badges, filters, watch-page flag
@@ -66,6 +69,16 @@ extension/
 Everything runs locally in your browser. The only external requests are to
 `api.jikan.moe` (MyAnimeList filler data, series titles only — no account data)
 and to AniList/Crunchyroll APIs as in the original extension.
+
+## Troubleshooting
+
+* **Blur / calendar say you're not logged in** — make sure you're logged in to
+  crunchyroll.com in that browser. The feature scripts need your session to
+  read watch progress and your list; they never blur when they can't tell.
+* **After updating the extension** — remove/reload it (`about:debugging` →
+  Reload, or `chrome://extensions` → reload) **and refresh any Crunchyroll
+  tabs** so the new scripts are injected.
+* Check the browser console for `[CrOptix]` messages when reporting issues.
 
 ## Tests
 

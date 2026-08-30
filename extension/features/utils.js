@@ -105,7 +105,51 @@
   // --------------------------------------------------------------------------
   // Crunchyroll API (same-origin, cookie auth)
   // --------------------------------------------------------------------------
+  // Crunchyroll's API requires an "Authorization: Bearer" header; cookies
+  // alone get 401. features/bridge-main.js (MAIN world) captures/mints the
+  // token and answers requests sent via window.postMessage. If the bridge is
+  // not present (other browsers/environments), we fall back to direct fetch.
+  const BRIDGE_REQ = "croptix-cs-request";
+  const BRIDGE_RES = "croptix-page-response";
+  let bridgeState = "unknown"; // "unknown" | "ok" | "dead"
+  let bridgeSeq = 0;
+
+  function bridgeRequest(payload, timeoutMs = 15000) {
+    return new Promise((resolve) => {
+      const reqId = `r${++bridgeSeq}`;
+      const onMessage = (event) => {
+        // Same-window messages carry source === window; jsdom may leave it null.
+        if (event.source != null && event.source !== window) return;
+        const data = event.data;
+        if (!data || typeof data !== "object" || data.source !== BRIDGE_RES || data.reqId !== reqId) return;
+        cleanup();
+        resolve(data);
+      };
+      const timer = setTimeout(() => { cleanup(); resolve(null); }, timeoutMs);
+      function cleanup() {
+        clearTimeout(timer);
+        window.removeEventListener("message", onMessage);
+      }
+      window.addEventListener("message", onMessage);
+      try { window.postMessage({ source: BRIDGE_REQ, reqId, ...payload }, location.origin); }
+      catch { cleanup(); resolve(null); }
+    });
+  }
+
   async function crApi(path, params = {}) {
+    if (bridgeState === "unknown") {
+      const pong = await bridgeRequest({ path: "__ping__" }, 600);
+      bridgeState = pong ? "ok" : "dead";
+      if (bridgeState === "ok") warnOnce("bridge active");
+    }
+    if (bridgeState === "ok") {
+      const res = await bridgeRequest({ path, params });
+      if (res) {
+        if (res.ok) return res.body;
+        throw new Error(`CrOptix: Crunchyroll API ${path} → HTTP ${res.status}`);
+      }
+      bridgeState = "dead";
+    }
     const url = new URL(path, location.origin);
     for (const [k, v] of Object.entries(params)) if (v != null) url.searchParams.set(k, v);
     const res = await fetch(url.href, {
@@ -473,7 +517,7 @@
   // --------------------------------------------------------------------------
   Object.assign(CROPTIX, {
     ext,
-    VERSION: "2.1.0",
+    VERSION: "2.1.1",
     // settings
     loadSettings,
     getSetting,
