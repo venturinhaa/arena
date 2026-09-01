@@ -7,8 +7,6 @@
     --croptix-hover: #ffffff25;
     --croptix-hover-active: #ffffff40;
     --croptix-btn-weak: #ffffff20;
-    --croptix-orange: #ff6400;
-    --croptix-orange-hover: #ff7e29;
 
     /* Effects */
     --croptix-blur: blur(10px);
@@ -23,89 +21,29 @@ html,
 body {
     margin: 0;
     padding: 0;
-    width: 290px;
-    background: #141519;
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #ffffff;
+    width: 280px;
+    background: #1a1a1a;
+    font-family: system-ui, sans-serif;
 }
 
 .popup {
     padding: 16px;
+    color: white;
 }
 
-.popup-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-}
-
-.popup-header h2 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 0.5px;
-}
-
-.version-tag {
-    font-size: 11px;
-    background: rgba(255, 100, 0, 0.2);
-    color: var(--croptix-orange);
-    padding: 2px 6px;
-    border-radius: 10px;
+.popup h2 {
+    margin: 0 0 14px 0;
+    font-size: 15px;
     font-weight: 600;
-}
-
-.calendar-section {
-    margin-bottom: 12px;
-}
-
-.calendar-action-btn {
-    width: 100%;
-    background: var(--croptix-orange);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--croptix-radius);
-    padding: 10px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(255, 100, 0, 0.3);
-    transition: all 0.2s ease;
-}
-
-.calendar-action-btn:hover {
-    background: var(--croptix-orange-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(255, 100, 0, 0.45);
-}
-
-.divider {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 12px 0;
-}
-
-.settings-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
 }
 
 .switch {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     padding: 8px 10px;
     border-radius: var(--croptix-radius);
     cursor: pointer;
     transition: 150ms ease;
-    background: rgba(255, 255, 255, 0.05);
 }
 
 .switch:hover {
@@ -113,13 +51,34 @@ body {
 }
 
 .switch span {
-    font-size: 13px;
-    font-weight: 500;
+    width: 100%;
+    text-align: center;
 }
 
 .switch input {
-    accent-color: var(--croptix-orange);
+    accent-color: #ff6400;
     width: 16px;
     height: 16px;
+}
+
+.calendar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 12px;
+    padding: 9px 10px;
+    border-radius: var(--croptix-radius);
     cursor: pointer;
+    background: #ff6400;
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    box-shadow: var(--croptix-shadow);
+    transition: 150ms ease;
+}
+
+.calendar-btn:hover {
+    background: #ff7e29;
 }

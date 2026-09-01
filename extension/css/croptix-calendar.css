@@ -19,208 +19,43 @@
   --croptix-radius-lg: 14px;
 }
 
-/* Header Nav Button Integration */
+/* Header Nav Button Integration - matches Crunchyroll header elements cleanly */
 .croptix-calendar-nav-btn {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
   background: transparent !important;
-  color: #e0e0e0 !important;
+  color: #fff !important;
   border: none !important;
   border-radius: var(--croptix-radius-sm, 6px) !important;
-  padding: 6px 12px !important;
+  padding: 8px 12px !important;
   font-size: 14px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
   text-decoration: none !important;
-  position: relative !important;
-  line-height: 1.2 !important;
+  line-height: 1 !important;
 }
 
 .croptix-calendar-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
   color: var(--croptix-cr-orange) !important;
 }
 
 .croptix-calendar-nav-btn svg {
-  width: 18px !important;
-  height: 18px !important;
+  width: 17px !important;
+  height: 17px !important;
   fill: currentColor !important;
-  transition: transform 0.2s ease !important;
-}
-
-.croptix-calendar-nav-btn:hover svg {
-  transform: scale(1.1) !important;
-}
-
-.croptix-calendar-nav-btn .cal-badge {
-  background: var(--croptix-cr-orange) !important;
-  color: #fff !important;
-  font-size: 10px !important;
-  font-weight: bold !important;
-  padding: 1px 5px !important;
-  border-radius: 10px !important;
-  margin-left: 2px !important;
-}
-
-/* Series / Episode Header Star Button */
-.croptix-series-star-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: var(--croptix-radius-sm, 6px) !important;
-  padding: 10px 18px !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  margin-left: 8px !important;
-  vertical-align: middle !important;
-  user-select: none !important;
-}
-
-.croptix-series-star-btn svg {
-  width: 18px !important;
-  height: 18px !important;
-  fill: currentColor !important;
-  transition: transform 0.2s ease, fill 0.2s ease !important;
-}
-
-.croptix-series-star-btn:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: #ffd700 !important;
-  color: #ffd700 !important;
-  transform: translateY(-1px) !important;
-}
-
-.croptix-series-star-btn:hover svg {
-  transform: scale(1.15) rotate(5deg) !important;
-}
-
-.croptix-series-star-btn.is-starred {
-  background: rgba(255, 215, 0, 0.18) !important;
-  border-color: #ffd700 !important;
-  color: #ffd700 !important;
-  box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2) !important;
-}
-
-/* Watchlist Item Card Inline Star Button */
-.croptix-card-inline-star-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(4px) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 50% !important;
-  width: 32px !important;
-  height: 32px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  margin: 0 4px !important;
-  z-index: 10 !important;
-}
-
-.croptix-card-inline-star-btn svg {
-  width: 16px !important;
-  height: 16px !important;
-  fill: currentColor !important;
-}
-
-.croptix-card-inline-star-btn:hover {
-  background: rgba(0, 0, 0, 0.9) !important;
-  border-color: #ffd700 !important;
-  color: #ffd700 !important;
-  transform: scale(1.15) !important;
-}
-
-.croptix-card-inline-star-btn.is-starred {
-  background: rgba(255, 215, 0, 0.25) !important;
-  border-color: #ffd700 !important;
-  color: #ffd700 !important;
-}
-
-/* Toast Notification */
-.croptix-toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(30px);
-  background: #23252b;
-  border: 1px solid var(--croptix-cr-orange);
-  color: #ffffff;
-  padding: 12px 22px;
-  border-radius: 30px;
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px var(--croptix-cr-orange-glow);
-  z-index: 9999999;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.croptix-toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-
-.croptix-toast svg {
-  width: 18px;
-  height: 18px;
-  fill: #ffd700;
-}
-
-/* Floating Trigger Button (when header is hidden or in player) */
-.croptix-calendar-floating-btn {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: var(--croptix-cr-orange);
-  color: #ffffff;
-  border: none;
-  border-radius: 50px;
-  padding: 10px 18px;
-  font-size: 13px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 16px rgba(255, 100, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  z-index: 9999;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.croptix-calendar-floating-btn:hover {
-  background: var(--croptix-cr-orange-hover);
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 6px 20px rgba(255, 100, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.5);
-}
-
-.croptix-calendar-floating-btn svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
 }
 
 /* Calendar Modal Backdrop */
 .croptix-calendar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 999999;
+  z-index: 9999999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,7 +75,7 @@
   background: var(--croptix-bg-base);
   border: 1px solid var(--croptix-border);
   border-radius: var(--croptix-radius-lg);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05);
   width: 100%;
   max-width: 1180px;
   max-height: 90vh;
@@ -272,7 +107,8 @@
 .croptix-calendar-header-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .croptix-calendar-title-group {
@@ -314,7 +150,7 @@
   color: var(--croptix-text-muted);
 }
 
-/* Filter Tabs (All Releases vs Watchlist) */
+/* Filter Tabs */
 .croptix-filter-tabs {
   display: flex;
   background: var(--croptix-bg-base);
@@ -682,44 +518,6 @@
   background: rgba(255, 100, 0, 0.85);
 }
 
-.croptix-card-star-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #fff;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 2;
-}
-
-.croptix-card-star-btn:hover {
-  background: rgba(0, 0, 0, 0.9);
-  transform: scale(1.15);
-  border-color: #ffd700;
-  color: #ffd700;
-}
-
-.croptix-card-star-btn.is-starred {
-  background: rgba(255, 215, 0, 0.2);
-  border-color: #ffd700;
-  color: #ffd700;
-}
-
-.croptix-card-star-btn svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-}
-
 /* Card Content Details */
 .croptix-card-details {
   padding: 14px;
@@ -826,7 +624,7 @@
 
 .croptix-empty-desc {
   font-size: 13px;
-  max-width: 440px;
+  max-width: 480px;
   line-height: 1.5;
   margin: 0 0 20px 0;
 }

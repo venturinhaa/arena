@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Crunchyroll Enhancer – CrOptix",
-  "version": "3.0.2",
-  "description": "Crunchyroll improvements, anime release calendar, and fixes",
+  "version": "3.0.3",
+  "description": "Crunchyroll improvements and fixes",
   "homepage_url": "https://github.com/stratumadev/croptix",
   "permissions": [
     "storage",
@@ -95,7 +95,7 @@
         "css/croptix-calendar.css"
       ],
       "run_at": "document_start",
-      "all_frames": false
+      "all_frames": true
     }
   ]
 }
