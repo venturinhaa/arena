@@ -19,32 +19,42 @@
   --croptix-radius-lg: 14px;
 }
 
-/* Header Nav Button Integration - matches Crunchyroll header elements cleanly */
+/* Header Nav Button Integration - Identical color and styling to native Crunchyroll header buttons */
 .croptix-calendar-nav-btn {
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 6px !important;
-  background: transparent !important;
+  background-color: transparent !important;
   color: #fff !important;
   border: none !important;
-  border-radius: var(--croptix-radius-sm, 6px) !important;
-  padding: 8px 12px !important;
+  border-radius: var(--croptix-radius, 8px) !important;
+  padding: 0 12px !important;
+  height: 36px !important;
   font-size: 14px !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   cursor: pointer !important;
-  transition: all 0.2s ease !important;
+  transition: all 150ms ease !important;
   text-decoration: none !important;
   line-height: 1 !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
 }
 
 .croptix-calendar-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  color: var(--croptix-cr-orange) !important;
+  background-color: var(--croptix-hover, rgba(255, 255, 255, 0.15)) !important;
+  color: #fff !important;
+}
+
+.croptix-calendar-nav-btn.state-active,
+.croptix-calendar-nav-btn:active {
+  background-color: var(--croptix-hover-active, rgba(255, 255, 255, 0.25)) !important;
+  color: #fff !important;
 }
 
 .croptix-calendar-nav-btn svg {
-  width: 17px !important;
-  height: 17px !important;
+  width: 16px !important;
+  height: 16px !important;
   fill: currentColor !important;
 }
 
@@ -52,7 +62,7 @@
 .croptix-calendar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.82);
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 9999999;
@@ -94,7 +104,7 @@
 
 /* Modal Header */
 .croptix-calendar-header {
-  padding: 18px 24px;
+  padding: 16px 24px;
   background: var(--croptix-bg-elevated);
   border-bottom: 1px solid var(--croptix-border);
   display: flex;
@@ -121,22 +131,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   background: var(--croptix-badge-bg);
   color: var(--croptix-cr-orange);
   border-radius: var(--croptix-radius-md);
 }
 
 .croptix-calendar-title-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
 }
 
 .croptix-calendar-title-text h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #ffffff;
   display: flex;
@@ -264,6 +274,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .croptix-week-nav {
@@ -314,6 +326,33 @@
 .croptix-week-today-btn:hover {
   background: var(--croptix-cr-orange);
   color: #fff;
+}
+
+.croptix-mode-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.croptix-subview-btn {
+  background: var(--croptix-bg-card);
+  border: 1px solid var(--croptix-border);
+  color: var(--croptix-text-muted);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.croptix-subview-btn:hover {
+  color: #ffffff;
+}
+
+.croptix-subview-btn.active {
+  background: rgba(255, 100, 0, 0.2);
+  border-color: var(--croptix-cr-orange);
+  color: var(--croptix-cr-orange);
 }
 
 .croptix-timezone-badge {
