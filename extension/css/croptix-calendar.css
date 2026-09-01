@@ -1,0 +1,787 @@
+/* Crunchyroll Enhancer - CrOptix Anime Release Calendar Styles */
+:root {
+  --croptix-cr-orange: #ff6400;
+  --croptix-cr-orange-hover: #ff7e29;
+  --croptix-cr-orange-dark: #e05900;
+  --croptix-cr-orange-glow: rgba(255, 100, 0, 0.25);
+  --croptix-bg-base: #141519;
+  --croptix-bg-card: #23252b;
+  --croptix-bg-card-hover: #2c2f38;
+  --croptix-bg-elevated: #1e2026;
+  --croptix-border: rgba(255, 255, 255, 0.1);
+  --croptix-border-active: rgba(255, 100, 0, 0.5);
+  --croptix-text-main: #ffffff;
+  --croptix-text-muted: #a0a0a0;
+  --croptix-text-dim: #707070;
+  --croptix-badge-bg: rgba(255, 100, 0, 0.15);
+  --croptix-radius-sm: 6px;
+  --croptix-radius-md: 10px;
+  --croptix-radius-lg: 14px;
+}
+
+/* Header Nav Button Integration */
+.croptix-calendar-nav-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: transparent !important;
+  color: #e0e0e0 !important;
+  border: none !important;
+  border-radius: var(--croptix-radius-sm, 6px) !important;
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  position: relative !important;
+  line-height: 1.2 !important;
+}
+
+.croptix-calendar-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--croptix-cr-orange) !important;
+}
+
+.croptix-calendar-nav-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  fill: currentColor !important;
+  transition: transform 0.2s ease !important;
+}
+
+.croptix-calendar-nav-btn:hover svg {
+  transform: scale(1.1) !important;
+}
+
+.croptix-calendar-nav-btn .cal-badge {
+  background: var(--croptix-cr-orange) !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: bold !important;
+  padding: 1px 5px !important;
+  border-radius: 10px !important;
+  margin-left: 2px !important;
+}
+
+/* Floating Trigger Button (when header is hidden or in player) */
+.croptix-calendar-floating-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--croptix-cr-orange);
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(255, 100, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  z-index: 9999;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.croptix-calendar-floating-btn:hover {
+  background: var(--croptix-cr-orange-hover);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 20px rgba(255, 100, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+.croptix-calendar-floating-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* Calendar Modal Backdrop */
+.croptix-calendar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.croptix-calendar-backdrop.croptix-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Calendar Modal Container */
+.croptix-calendar-modal {
+  background: var(--croptix-bg-base);
+  border: 1px solid var(--croptix-border);
+  border-radius: var(--croptix-radius-lg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  width: 100%;
+  max-width: 1180px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--croptix-text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  transform: scale(0.96) translateY(10px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.croptix-calendar-backdrop.croptix-open .croptix-calendar-modal {
+  transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+.croptix-calendar-header {
+  padding: 18px 24px;
+  background: var(--croptix-bg-elevated);
+  border-bottom: 1px solid var(--croptix-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.croptix-calendar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.croptix-calendar-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.croptix-calendar-title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: var(--croptix-badge-bg);
+  color: var(--croptix-cr-orange);
+  border-radius: var(--croptix-radius-md);
+}
+
+.croptix-calendar-title-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.croptix-calendar-title-text h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.croptix-calendar-title-text p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: var(--croptix-text-muted);
+}
+
+/* Filter Tabs (All Releases vs Watchlist) */
+.croptix-filter-tabs {
+  display: flex;
+  background: var(--croptix-bg-base);
+  padding: 4px;
+  border-radius: 30px;
+  border: 1px solid var(--croptix-border);
+  gap: 4px;
+}
+
+.croptix-filter-btn {
+  background: transparent;
+  color: var(--croptix-text-muted);
+  border: none;
+  padding: 7px 16px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.croptix-filter-btn svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+.croptix-filter-btn:hover {
+  color: #ffffff;
+}
+
+.croptix-filter-btn.active {
+  background: var(--croptix-cr-orange);
+  color: #ffffff;
+  box-shadow: 0 2px 8px var(--croptix-cr-orange-glow);
+}
+
+/* Header Controls Right */
+.croptix-calendar-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.croptix-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.croptix-search-input {
+  background: var(--croptix-bg-base);
+  border: 1px solid var(--croptix-border);
+  color: #fff;
+  border-radius: 20px;
+  padding: 7px 14px 7px 34px;
+  font-size: 13px;
+  width: 190px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.croptix-search-input:focus {
+  border-color: var(--croptix-cr-orange);
+  width: 240px;
+  box-shadow: 0 0 0 2px var(--croptix-cr-orange-glow);
+}
+
+.croptix-search-icon {
+  position: absolute;
+  left: 11px;
+  width: 14px;
+  height: 14px;
+  fill: var(--croptix-text-muted);
+  pointer-events: none;
+}
+
+.croptix-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #ffffff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.croptix-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+.croptix-close-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Week Navigator Bar */
+.croptix-week-bar {
+  padding: 10px 24px;
+  background: rgba(20, 21, 25, 0.7);
+  border-bottom: 1px solid var(--croptix-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.croptix-week-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.croptix-week-btn {
+  background: var(--croptix-bg-card);
+  border: 1px solid var(--croptix-border);
+  color: var(--croptix-text-main);
+  padding: 5px 12px;
+  border-radius: var(--croptix-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.croptix-week-btn:hover {
+  border-color: var(--croptix-cr-orange);
+  color: var(--croptix-cr-orange);
+}
+
+.croptix-week-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  padding: 0 4px;
+}
+
+.croptix-week-today-btn {
+  background: rgba(255, 100, 0, 0.15);
+  border: 1px solid var(--croptix-cr-orange);
+  color: var(--croptix-cr-orange);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.croptix-week-today-btn:hover {
+  background: var(--croptix-cr-orange);
+  color: #fff;
+}
+
+.croptix-timezone-badge {
+  font-size: 11px;
+  color: var(--croptix-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Day Selector Strip */
+.croptix-day-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--croptix-bg-elevated);
+  border-bottom: 1px solid var(--croptix-border);
+  gap: 1px;
+  user-select: none;
+}
+
+.croptix-day-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 12px 6px;
+  color: var(--croptix-text-muted);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.croptix-day-tab:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
+.croptix-day-tab.active {
+  background: rgba(255, 100, 0, 0.08);
+  border-bottom-color: var(--croptix-cr-orange);
+  color: #ffffff;
+}
+
+.croptix-day-name {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.croptix-day-date {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.croptix-day-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--croptix-text-muted);
+  font-weight: 600;
+}
+
+.croptix-day-tab.active .croptix-day-badge {
+  background: var(--croptix-cr-orange);
+  color: #ffffff;
+}
+
+.croptix-day-tab.is-today .croptix-day-name {
+  color: var(--croptix-cr-orange);
+}
+
+.croptix-day-tab.is-today::after {
+  content: "HOJE";
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 8px;
+  font-weight: 900;
+  background: var(--croptix-cr-orange);
+  color: #ffffff;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+/* Modal Content Area */
+.croptix-calendar-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  background: var(--croptix-bg-base);
+  min-height: 380px;
+}
+
+/* Custom Scrollbar */
+.croptix-calendar-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.croptix-calendar-body::-webkit-scrollbar-track {
+  background: var(--croptix-bg-base);
+}
+
+.croptix-calendar-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.croptix-calendar-body::-webkit-scrollbar-thumb:hover {
+  background: var(--croptix-cr-orange);
+}
+
+/* Anime Grid */
+.croptix-anime-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+/* Anime Card */
+.croptix-anime-card {
+  background: var(--croptix-bg-card);
+  border: 1px solid var(--croptix-border);
+  border-radius: var(--croptix-radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.croptix-anime-card:hover {
+  transform: translateY(-4px);
+  background: var(--croptix-bg-card-hover);
+  border-color: var(--croptix-border-active);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 100, 0, 0.15);
+}
+
+/* Card Poster Image Area */
+.croptix-card-poster-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #101012;
+  overflow: hidden;
+}
+
+.croptix-card-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.croptix-anime-card:hover .croptix-card-poster {
+  transform: scale(1.05);
+}
+
+/* Poster Badges */
+.croptix-card-ep-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--croptix-cr-orange);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.croptix-card-time-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.croptix-card-time-badge.is-aired {
+  background: rgba(30, 160, 60, 0.85);
+}
+
+.croptix-card-time-badge.is-today-soon {
+  background: rgba(255, 100, 0, 0.85);
+}
+
+.croptix-card-star-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.croptix-card-star-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.15);
+  border-color: #ffd700;
+  color: #ffd700;
+}
+
+.croptix-card-star-btn.is-starred {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #ffd700;
+  color: #ffd700;
+}
+
+.croptix-card-star-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Card Content Details */
+.croptix-card-details {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.croptix-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.croptix-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.35;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.croptix-card-title:hover {
+  color: var(--croptix-cr-orange);
+}
+
+.croptix-card-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.croptix-genre-pill {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--croptix-text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Card Action Button */
+.croptix-card-btn {
+  background: var(--croptix-cr-orange);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: var(--croptix-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.croptix-card-btn:hover {
+  background: var(--croptix-cr-orange-hover);
+  box-shadow: 0 4px 12px var(--croptix-cr-orange-glow);
+}
+
+.croptix-card-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+/* Empty State */
+.croptix-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--croptix-text-muted);
+}
+
+.croptix-empty-icon {
+  width: 56px;
+  height: 56px;
+  color: var(--croptix-cr-orange);
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.croptix-empty-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.croptix-empty-desc {
+  font-size: 13px;
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.croptix-empty-btn {
+  background: var(--croptix-cr-orange);
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.croptix-empty-btn:hover {
+  background: var(--croptix-cr-orange-hover);
+}
+
+/* Loading Skeleton */
+.croptix-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.croptix-skeleton-card {
+  background: var(--croptix-bg-card);
+  border-radius: var(--croptix-radius-md);
+  overflow: hidden;
+  height: 260px;
+  position: relative;
+}
+
+.croptix-skeleton-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: croptix-shimmer 1.5s infinite;
+}
+
+@keyframes croptix-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .croptix-calendar-modal {
+    max-height: 96vh;
+  }
+  .croptix-day-strip {
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .croptix-day-name {
+    font-size: 10px;
+  }
+  .croptix-day-date {
+    font-size: 13px;
+  }
+  .croptix-calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
