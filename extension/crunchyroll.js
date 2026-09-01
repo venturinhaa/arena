@@ -7,14 +7,14 @@
         }
     }`,R=()=>{r.ids.length=0,r.seen.clear(),r.catalogs.clear(),Object.assign(r,{page:1,done:!1,expires:0,retryAt:0})},x=()=>{let t=Date.now();if(r.loading)return r.loading;if(r.expires&&r.expires<=t)R();if(r.done)return Promise.resolve();if(t<r.retryAt)return Promise.reject(Error("AniList retry is temporarily delayed"));if(typeof h!=="function")return Promise.reject(Error("Fetch is unavailable"));let n=[r.page,Math.min(r.page+1,10)];return r.loading=h.call(window,"https://graphql.anilist.co",{method:"POST",credentials:"omit",referrerPolicy:"no-referrer",headers:{"content-type":"application/json"},body:JSON.stringify({query:A,variables:{firstPage:n[0],secondPage:n[1]}})}).then(async(e)=>{if(!e.ok)throw Error(`AniList returned HTTP ${e.status}`);let a=await e.json();if(a.errors?.length)throw Error(a.errors.map(({message:o})=>o).join(", "));let s=[...a.data?.first?.media??[],...a.data?.second?.media??[]];for(let o of s)for(let c of o.externalLinks??[]){let l=c.url?.match(/crunchyroll\.com\/(?:[a-z]{2}\/)?series\/([a-z0-9]+)/i)?.[1]?.toUpperCase();if(!l||r.seen.has(l))continue;r.seen.add(l),r.ids.push(l)}r.page=n[1]+1,r.done=r.page>10,r.expires=Date.now()+900000,r.retryAt=0}).catch((e)=>{throw r.retryAt=Date.now()+60000,console.warn("[CrOptix] Failed to load AniList trending anime.",e),e}).finally(()=>{r.loading=null}),r.loading},b=(t)=>{let n=Number.parseInt(t.searchParams.get("start")??"0",10),e=Number.parseInt(t.searchParams.get("n")??"36",10);return[n>0?n:0,e>0?e:36]},j=(t,n=!0)=>{let e=t.searchParams.get("locale")||"en-US",a=t.searchParams.get("preferred_audio_language")||e,s=`${e}|${a}`;if(!r.catalogs.has(s)&&n)r.catalogs.set(s,{locale:e,audio:a,ratings:t.searchParams.get("ratings")||"true",items:[],seen:new Set,cursor:0,wanted:0,done:!1,loading:null});return r.catalogs.get(s)},T=async(t,n)=>{if(!r.ids.length||r.expires<=Date.now())await x();let e=j(t),[a,s]=b(t),o=a+s;if(e.wanted=Math.max(e.wanted,o),!e.loading)e.loading=(async()=>{while(e.items.length<e.wanted&&!e.done){if(e.cursor>=r.ids.length){if(r.done){e.done=!0;break}await x();continue}let c=r.ids.slice(e.cursor,e.cursor+50),l=new URL(`/content/v2/cms/objects/${c.join(",")}`,t.origin);l.searchParams.set("ratings",e.ratings),l.searchParams.set("preferred_audio_language",e.audio),l.searchParams.set("locale",e.locale);let d=new Headers(n);d.set("accept","application/json"),d.delete("content-length"),d.delete("host");let f=await h.call(window,l.href,{credentials:"same-origin",headers:d});if(!f.ok)throw Error(`Crunchyroll objects returned HTTP ${f.status}`);let p=(await f.json())?.data;if(!Array.isArray(p))throw Error("Crunchyroll objects returned invalid JSON");let g=new Map(p.map((i)=>[String(i.id??"").toUpperCase(),i]));e.cursor+=c.length;for(let i of c){let u=g.get(i);if(!u||e.seen.has(i))continue;e.seen.add(i),e.items.push(u)}e.done=r.done&&e.cursor>=r.ids.length}})().finally(()=>{e.loading=null});if(await e.loading,e.items.length<o&&!e.done)await T(t,n)},E=[{hint:"/f/v1/home",matches:(t)=>t.pathname==="/f/v1/home",transform:(t)=>{let n=t?.children;if(!Array.isArray(n))return t;let e=n.findIndex((o)=>o?.type==="HistoryCollection");if(e<0)return t;let a=n.splice(e,1)[0],s=n.findIndex((o)=>!["HeroMediaCard","HeroCollection"].includes(o?.type));return n.splice(s<0?n.length:s,0,a),t}},{hint:"/content/v2/discover/browse",matches:(t)=>t.pathname==="/content/v2/discover/browse"&&t.searchParams.get("sort_by")==="popularity",prepare:T,transform:(t,n)=>{let e=j(n,!1);if(!e||!e.items.length&&t?.data?.length)return t;let[a,s]=b(n);return t.data=e.items.slice(a,a+s),t.total=e.done?e.items.length:500,t}}],O=(t,n=new Headers)=>{let e=String(t),a=E.filter(({hint:o})=>e.includes(o));if(!a.length)return[];let s=new URL(e,window.location.href);return a.filter((o)=>o.matches(s)).map((o)=>({...o,url:s,headers:n}))},m=(t,n)=>n.reduce((e,a)=>a.failed?e:a.transform(e,a.url),t),S=(t)=>Promise.all(t.map((n)=>n.prepare?.(n.url,n.headers))).catch((n)=>{for(let e of t)e.failed=!0;throw n}),D=async(t,n,e)=>{let a=await t.clone().json();await e;let s=new Headers(t.headers);s.delete("content-encoding"),s.delete("content-length");let o=new Response(JSON.stringify(m(a,n)),{status:t.status,statusText:t.statusText,headers:s});for(let c of["url","redirected","type"])try{Object.defineProperty(o,c,{value:t[c]})}catch{}return o};
 
-// Watchlist event broadcaster for CrOptix calendar
+// Watchlist event broadcaster for CrOptix calendar - strictly for actual Watchlist API responses
 function notifyWatchlistItems(items){
   try {
     if (!Array.isArray(items) || items.length === 0) return;
     const extracted = [];
     for (const it of items) {
       const panel = it.panel || it;
-      const title = panel.title || panel.series_title || panel.slug_title || (panel.series_metadata && panel.series_metadata.series_title);
+      const title = panel.title || panel.series_title || (panel.series_metadata && panel.series_metadata.series_title);
       const id = panel.id || panel.series_id || it.id;
       if (title || id) {
         extracted.push({ id: String(id || ""), title: String(title || "") });
@@ -27,10 +27,16 @@ function notifyWatchlistItems(items){
 }
 
 if(typeof h==="function")window.fetch=function(...t){let n;try{let s=t[0],o=typeof Request<"u"&&s instanceof Request,c=new Headers(o?s.headers:void 0);if(t[1]?.headers)new Headers(t[1].headers).forEach((l,d)=>c.set(d,l));n=O(o?s.url:s,c)}catch(s){return console.warn("[CrOptix] Failed to inspect a Crunchyroll fetch request.",s),h.apply(this,t)}let e=h.apply(this,t);
-// Intercept watchlist calls
+
+// Intercept ONLY genuine Watchlist endpoints (not browse, discover recommendations, or categories)
 try {
   const urlStr = String(typeof t[0] === 'string' ? t[0] : (t[0]?.url || ''));
-  if (urlStr.includes('/watchlist') || urlStr.includes('/discover/') || urlStr.includes('/crunchylists')) {
+  const isGenuineWatchlist = (urlStr.includes('/watchlist') || urlStr.includes('/crunchylists/')) &&
+                             !urlStr.includes('/browse') &&
+                             !urlStr.includes('/categories') &&
+                             !urlStr.includes('/similar_to') &&
+                             !urlStr.includes('/prev_next');
+  if (isGenuineWatchlist) {
     e.then(async (resp) => {
       try {
         const cloned = resp.clone();
