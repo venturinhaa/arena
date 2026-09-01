@@ -19,43 +19,33 @@
   --croptix-radius-lg: 14px;
 }
 
-/* Header Nav Button Integration - Identical color and styling to native Crunchyroll header buttons */
+/* Header Nav Link - Exact match to Novidade, Popular, Transmissão simultânea */
 .croptix-calendar-nav-btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
   background-color: transparent !important;
-  color: #fff !important;
+  color: #dadada !important;
   border: none !important;
-  border-radius: var(--croptix-radius, 8px) !important;
-  padding: 0 12px !important;
-  height: 36px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   cursor: pointer !important;
-  transition: all 150ms ease !important;
   text-decoration: none !important;
-  line-height: 1 !important;
-  vertical-align: middle !important;
-  box-sizing: border-box !important;
+  line-height: inherit !important;
+  padding: 0 12px !important;
+  transition: color 150ms ease, background-color 150ms ease !important;
+  user-select: none !important;
 }
 
 .croptix-calendar-nav-btn:hover {
-  background-color: var(--croptix-hover, rgba(255, 255, 255, 0.15)) !important;
-  color: #fff !important;
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 .croptix-calendar-nav-btn.state-active,
 .croptix-calendar-nav-btn:active {
-  background-color: var(--croptix-hover-active, rgba(255, 255, 255, 0.25)) !important;
-  color: #fff !important;
-}
-
-.croptix-calendar-nav-btn svg {
-  width: 16px !important;
-  height: 16px !important;
-  fill: currentColor !important;
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Calendar Modal Backdrop */
@@ -208,6 +198,32 @@
   gap: 12px;
 }
 
+.croptix-sync-btn {
+  background: var(--croptix-bg-card);
+  border: 1px solid var(--croptix-border);
+  color: var(--croptix-text-muted);
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.croptix-sync-btn:hover {
+  border-color: var(--croptix-cr-orange);
+  color: var(--croptix-cr-orange);
+}
+
+.croptix-sync-btn svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+}
+
 .croptix-search-wrapper {
   position: relative;
   display: flex;
@@ -221,14 +237,14 @@
   border-radius: 20px;
   padding: 7px 14px 7px 34px;
   font-size: 13px;
-  width: 190px;
+  width: 180px;
   transition: all 0.2s ease;
   outline: none;
 }
 
 .croptix-search-input:focus {
   border-color: var(--croptix-cr-orange);
-  width: 240px;
+  width: 230px;
   box-shadow: 0 0 0 2px var(--croptix-cr-orange-glow);
 }
 
