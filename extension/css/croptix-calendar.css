@@ -19,33 +19,10 @@
   --croptix-radius-lg: 14px;
 }
 
-/* Header Nav Link - Exact match to Novidade, Popular, Transmissão simultânea */
+/* Header Nav Link - Natural inheritance from Crunchyroll's native menu classes */
 .croptix-calendar-nav-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background-color: transparent !important;
-  color: #dadada !important;
-  border: none !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
   cursor: pointer !important;
-  text-decoration: none !important;
-  line-height: inherit !important;
-  padding: 0 12px !important;
-  transition: color 150ms ease, background-color 150ms ease !important;
   user-select: none !important;
-}
-
-.croptix-calendar-nav-btn:hover {
-  color: #ffffff !important;
-  background-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-.croptix-calendar-nav-btn.state-active,
-.croptix-calendar-nav-btn:active {
-  color: #ffffff !important;
-  background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Calendar Modal Backdrop */
@@ -77,7 +54,7 @@
   border-radius: var(--croptix-radius-lg);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05);
   width: 100%;
-  max-width: 1180px;
+  max-width: 1200px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -86,6 +63,7 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   transform: scale(0.96) translateY(10px);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
 .croptix-calendar-backdrop.croptix-open .croptix-calendar-modal {
@@ -94,14 +72,14 @@
 
 /* Modal Header */
 .croptix-calendar-header {
-  padding: 16px 24px;
+  padding: 14px 20px;
   background: var(--croptix-bg-elevated);
   border-bottom: 1px solid var(--croptix-border);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .croptix-calendar-header-left {
@@ -136,7 +114,7 @@
 
 .croptix-calendar-title-text h2 {
   margin: 0;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   display: flex;
@@ -146,7 +124,7 @@
 
 .croptix-calendar-title-text p {
   margin: 2px 0 0 0;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--croptix-text-muted);
 }
 
@@ -164,9 +142,9 @@
   background: transparent;
   color: var(--croptix-text-muted);
   border: none;
-  padding: 7px 16px;
-  border-radius: 24px;
-  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -176,8 +154,8 @@
 }
 
 .croptix-filter-btn svg {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   fill: currentColor;
 }
 
@@ -195,15 +173,16 @@
 .croptix-calendar-header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.croptix-sync-btn {
+.croptix-header-btn {
   background: var(--croptix-bg-card);
   border: 1px solid var(--croptix-border);
   color: var(--croptix-text-muted);
-  padding: 7px 12px;
-  border-radius: 20px;
+  padding: 6px 12px;
+  border-radius: 18px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -213,12 +192,12 @@
   transition: all 0.2s ease;
 }
 
-.croptix-sync-btn:hover {
+.croptix-header-btn:hover {
   border-color: var(--croptix-cr-orange);
   color: var(--croptix-cr-orange);
 }
 
-.croptix-sync-btn svg {
+.croptix-header-btn svg {
   width: 13px;
   height: 13px;
   fill: currentColor;
@@ -235,24 +214,24 @@
   border: 1px solid var(--croptix-border);
   color: #fff;
   border-radius: 20px;
-  padding: 7px 14px 7px 34px;
-  font-size: 13px;
-  width: 180px;
+  padding: 6px 12px 6px 32px;
+  font-size: 12px;
+  width: 160px;
   transition: all 0.2s ease;
   outline: none;
 }
 
 .croptix-search-input:focus {
   border-color: var(--croptix-cr-orange);
-  width: 230px;
+  width: 200px;
   box-shadow: 0 0 0 2px var(--croptix-cr-orange-glow);
 }
 
 .croptix-search-icon {
   position: absolute;
-  left: 11px;
-  width: 14px;
-  height: 14px;
+  left: 10px;
+  width: 13px;
+  height: 13px;
   fill: var(--croptix-text-muted);
   pointer-events: none;
 }
@@ -261,8 +240,8 @@
   background: rgba(255, 255, 255, 0.08);
   border: none;
   color: #ffffff;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -277,14 +256,14 @@
 }
 
 .croptix-close-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   fill: currentColor;
 }
 
 /* Week Navigator Bar */
 .croptix-week-bar {
-  padding: 10px 24px;
+  padding: 8px 20px;
   background: rgba(20, 21, 25, 0.7);
   border-bottom: 1px solid var(--croptix-border);
   display: flex;
@@ -297,16 +276,16 @@
 .croptix-week-nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .croptix-week-btn {
   background: var(--croptix-bg-card);
   border: 1px solid var(--croptix-border);
   color: var(--croptix-text-main);
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: var(--croptix-radius-sm);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -321,7 +300,7 @@
 }
 
 .croptix-week-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: #ffffff;
   padding: 0 4px;
@@ -333,7 +312,7 @@
   color: var(--croptix-cr-orange);
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -355,7 +334,7 @@
   color: var(--croptix-text-muted);
   padding: 4px 12px;
   border-radius: 16px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -393,13 +372,13 @@
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
-  padding: 12px 6px;
+  padding: 10px 4px;
   color: var(--croptix-text-muted);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   transition: all 0.2s ease;
   position: relative;
 }
@@ -416,14 +395,14 @@
 }
 
 .croptix-day-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .croptix-day-date {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   color: #ffffff;
 }
@@ -449,19 +428,19 @@
 .croptix-day-tab.is-today::after {
   content: "HOJE";
   position: absolute;
-  top: 4px;
-  right: 6px;
-  font-size: 8px;
+  top: 3px;
+  right: 4px;
+  font-size: 7px;
   font-weight: 900;
   background: var(--croptix-cr-orange);
   color: #ffffff;
-  padding: 1px 4px;
-  border-radius: 4px;
+  padding: 1px 3px;
+  border-radius: 3px;
 }
 
 /* Modal Content Area */
 .croptix-calendar-body {
-  padding: 24px;
+  padding: 20px;
   overflow-y: auto;
   flex: 1;
   background: var(--croptix-bg-base);
@@ -489,8 +468,8 @@
 /* Anime Grid */
 .croptix-anime-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
 }
 
 /* Anime Card */
@@ -535,13 +514,13 @@
 /* Poster Badges */
 .croptix-card-ep-badge {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 8px;
+  left: 8px;
   background: var(--croptix-cr-orange);
   color: #ffffff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -550,14 +529,14 @@
 
 .croptix-card-time-badge {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
+  bottom: 8px;
+  left: 8px;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
   color: #ffffff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -575,22 +554,22 @@
 
 /* Card Content Details */
 .croptix-card-details {
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   flex: 1;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .croptix-card-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .croptix-card-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.35;
@@ -615,10 +594,10 @@
 }
 
 .croptix-genre-pill {
-  font-size: 10px;
+  font-size: 9px;
   background: rgba(255, 255, 255, 0.07);
   color: var(--croptix-text-muted);
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 4px;
 }
 
@@ -627,9 +606,9 @@
   background: var(--croptix-cr-orange);
   color: #ffffff;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 8px 12px;
+  padding: 7px 10px;
   border-radius: var(--croptix-radius-sm);
   display: flex;
   align-items: center;
@@ -646,8 +625,8 @@
 }
 
 .croptix-card-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   fill: currentColor;
 }
 
@@ -658,60 +637,172 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   color: var(--croptix-text-muted);
 }
 
 .croptix-empty-icon {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   color: var(--croptix-cr-orange);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   opacity: 0.8;
 }
 
 .croptix-empty-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .croptix-empty-desc {
-  font-size: 13px;
+  font-size: 12px;
   max-width: 480px;
   line-height: 1.5;
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
 }
 
 .croptix-empty-btn {
   background: var(--croptix-cr-orange);
   color: #fff;
   border: none;
-  padding: 9px 18px;
-  font-size: 13px;
+  padding: 8px 16px;
+  font-size: 12px;
   font-weight: 700;
-  border-radius: 20px;
+  border-radius: 18px;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .croptix-empty-btn:hover {
   background: var(--croptix-cr-orange-hover);
 }
 
+/* Manager Drawer / Modal */
+.croptix-manager-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  background: var(--croptix-bg-elevated);
+  border-left: 1px solid var(--croptix-border);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+
+.croptix-manager-drawer.open {
+  transform: translateX(0);
+}
+
+.croptix-manager-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--croptix-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.croptix-manager-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.croptix-manager-content {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.croptix-manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--croptix-bg-base);
+  padding: 8px;
+  border-radius: var(--croptix-radius-sm);
+  border: 1px solid var(--croptix-border);
+}
+
+.croptix-manager-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: var(--croptix-bg-card);
+  border-radius: 4px;
+  font-size: 11px;
+  color: #fff;
+}
+
+.croptix-manager-item-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.croptix-manager-item-del {
+  background: transparent;
+  border: none;
+  color: #ff5555;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.croptix-manager-item-del:hover {
+  background: rgba(255, 85, 85, 0.2);
+}
+
+.croptix-manager-add-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.croptix-manager-input {
+  background: var(--croptix-bg-base);
+  border: 1px solid var(--croptix-border);
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: none;
+}
+
+.croptix-manager-input:focus {
+  border-color: var(--croptix-cr-orange);
+}
+
 /* Loading Skeleton */
 .croptix-skeleton-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
 }
 
 .croptix-skeleton-card {
   background: var(--croptix-bg-card);
   border-radius: var(--croptix-radius-md);
   overflow: hidden;
-  height: 260px;
+  height: 240px;
   position: relative;
 }
 
@@ -747,10 +838,13 @@
     font-size: 10px;
   }
   .croptix-day-date {
-    font-size: 13px;
+    font-size: 12px;
   }
   .croptix-calendar-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .croptix-manager-drawer {
+    width: 100%;
   }
 }

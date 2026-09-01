@@ -11,76 +11,126 @@
 let savedAuthHeader = null;
 let savedAccountId = null;
 
-function notifyWatchlistItems(items){
+function findStoredToken() {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      const val = localStorage.getItem(key);
+      if (!val || typeof val !== "string") continue;
+      if (val.includes("Bearer ")) {
+        const m = val.match(/Bearer\s+([a-zA-Z0-9_\-\.]+)/);
+        if (m) return "Bearer " + m[1];
+      }
+      if (key.toLowerCase().includes("token") || key.toLowerCase().includes("auth")) {
+        try {
+          const parsed = JSON.parse(val);
+          const t = parsed.access_token || parsed.token || parsed.accessToken;
+          if (t && typeof t === "string") return t.startsWith("Bearer ") ? t : "Bearer " + t;
+        } catch (_) {}
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+function notifyWatchlistItems(items, replace = false){
   try {
     if (!Array.isArray(items) || items.length === 0) return;
     const extracted = [];
     for (const it of items) {
       const panel = it.panel || it;
-      const title = panel.title || panel.series_title || (panel.series_metadata && panel.series_metadata.series_title);
-      const id = panel.id || panel.series_id || it.id;
-      const slug = panel.slug_title || (panel.series_metadata && panel.series_metadata.slug_title);
-      const images = panel.images || (panel.series_metadata && panel.series_metadata.images);
+      const meta = panel.series_metadata || panel.episode_metadata || {};
+      const title = panel.title || panel.series_title || meta.series_title || it.title || "";
+      const id = panel.id || panel.series_id || it.id || it.series_id || "";
+      const slug = panel.slug_title || meta.slug_title || it.slug_title || "";
+      const images = panel.images || meta.images || it.images || {};
       const posterUrl = images?.poster_tall?.[0]?.source || images?.poster_wide?.[0]?.source || "";
-      const lastWatched = it.last_public_head_played_episode_id || it.playhead || null;
+      const lastWatched = it.playhead ? "A assistir" : (it.never_watched === false ? "Visto" : "Na Watchlist");
       if (title || id) {
         extracted.push({
           id: String(id || "").toUpperCase(),
-          title: String(title || ""),
-          slug: String(slug || ""),
+          title: String(title || "").trim(),
+          slug: String(slug || "").toLowerCase().trim(),
           image: posterUrl,
-          lastWatched
+          lastWatched,
+          url: id ? `https://www.crunchyroll.com/series/${id}/${slug}` : `https://www.crunchyroll.com/search?q=${encodeURIComponent(title)}`
         });
       }
     }
     if (extracted.length > 0) {
-      window.dispatchEvent(new CustomEvent("croptix:watchlist-sync", { detail: extracted }));
+      window.postMessage({ type: "CROPTIX_WATCHLIST_DATA", items: extracted, replace }, "*");
+      document.dispatchEvent(new CustomEvent("croptix:watchlist-sync", { detail: JSON.stringify(extracted) }));
     }
-  } catch (_) {}
+  } catch (err) {
+    console.warn("[CrOptix] Watchlist parse error:", err);
+  }
 }
 
 async function fetchWatchlistFromApi() {
   try {
-    let auth = savedAuthHeader || window.__CROPTIX_AUTH_HEADER__;
-    if (!auth) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        const val = localStorage.getItem(key);
-        if (val && typeof val === "string" && val.includes("Bearer ")) {
-          const match = val.match(/Bearer\s+([a-zA-Z0-9_\-\.]+)/);
-          if (match) { auth = "Bearer " + match[1]; break; }
-        }
-      }
-    }
+    let auth = savedAuthHeader || window.__CROPTIX_AUTH_HEADER__ || findStoredToken();
     const headers = { "accept": "application/json" };
-    if (auth) headers["authorization"] = auth;
+    if (auth) {
+      headers["authorization"] = auth;
+      window.__CROPTIX_AUTH_HEADER__ = auth;
+    }
+
+    // Attempt to get account ID if not known
+    if (!savedAccountId && auth) {
+      try {
+        const meRes = await h.call(window, "/accounts/v1/me", { headers, credentials: "include" });
+        if (meRes.ok) {
+          const meJson = await meRes.json();
+          savedAccountId = meJson.account_id || meJson.id || meJson.external_id || meJson.data?.account_id;
+        }
+      } catch (_) {}
+    }
 
     const endpoints = [
-      `/content/v2/discover/${savedAccountId ? savedAccountId + '/' : ''}watchlist?locale=pt-PT&n=100`,
+      savedAccountId ? `/content/v2/discover/${savedAccountId}/watchlist?locale=pt-PT&n=100` : null,
+      savedAccountId ? `/content/v2/discover/${savedAccountId}/watchlist?n=100` : null,
       `/content/v2/discover/watchlist?locale=pt-PT&n=100`,
-      `/content/v2/discover/watchlist?n=100`
-    ];
+      `/content/v2/discover/watchlist?n=100`,
+      savedAccountId ? `/content/v2/${savedAccountId}/custom-lists?n=100` : null
+    ].filter(Boolean);
 
     for (const ep of endpoints) {
       try {
-        const res = await h.call(window, ep, { headers, credentials: "same-origin" });
+        const res = await h.call(window, ep, { headers, credentials: "include" });
         if (res.ok) {
           const json = await res.json();
           const items = json.data || json.items || [];
-          if (items.length > 0) {
-            notifyWatchlistItems(items);
+          if (Array.isArray(items) && items.length > 0) {
+            notifyWatchlistItems(items, true);
             return items;
           }
         }
       } catch (_) {}
     }
-  } catch (_) {}
+  } catch (err) {
+    console.warn("[CrOptix] fetchWatchlistFromApi failed:", err);
+  }
 }
 
-window.addEventListener("croptix:request-watchlist-fetch", fetchWatchlistFromApi);
+window.addEventListener("message", (event) => {
+  if (event.source !== window || !event.data) return;
+  if (event.data.type === "CROPTIX_REQUEST_WATCHLIST") {
+    fetchWatchlistFromApi();
+  }
+});
+
+// Initial quick scan for tokens
+setTimeout(() => {
+  const token = findStoredToken();
+  if (token) {
+    savedAuthHeader = token;
+    window.__CROPTIX_AUTH_HEADER__ = token;
+    fetchWatchlistFromApi();
+  }
+}, 500);
 
 if(typeof h==="function")window.fetch=function(...t){let n;try{let s=t[0],o=typeof Request<"u"&&s instanceof Request,c=new Headers(o?s.headers:void 0);if(t[1]?.headers)new Headers(t[1].headers).forEach((l,d)=>c.set(d,l));
-const auth = c.get("authorization");
+const auth = c.get("authorization") || c.get("Authorization");
 if (auth && auth.startsWith("Bearer ")) {
   savedAuthHeader = auth;
   window.__CROPTIX_AUTH_HEADER__ = auth;
@@ -106,8 +156,8 @@ try {
       try {
         const cloned = resp.clone();
         const json = await cloned.json();
-        if (json?.data) notifyWatchlistItems(json.data);
-        if (json?.items) notifyWatchlistItems(json.items);
+        if (Array.isArray(json?.data)) notifyWatchlistItems(json.data, true);
+        else if (Array.isArray(json?.items)) notifyWatchlistItems(json.items, true);
       } catch (_) {}
     }).catch(()=>{});
   }

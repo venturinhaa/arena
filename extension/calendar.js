@@ -17,7 +17,9 @@
     chevronLeft: `<svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>`,
     chevronRight: `<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>`,
     globe: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`,
-    refresh: `<svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`
+    refresh: `<svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`,
+    edit: `<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`,
+    trash: `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`
   };
 
   const DAY_NAMES = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
@@ -43,6 +45,7 @@
   // State
   let state = {
     isOpen: false,
+    isManagerOpen: false,
     currentWeekOffset: 0,
     selectedDayIndex: new Date().getDay() === 0 ? 6 : new Date().getDay() - 1,
     activeTab: "watchlist",
@@ -51,144 +54,148 @@
     watchlistIds: new Set(),
     watchlistTitles: new Set(),
     watchlistSlugs: new Set(),
-    watchlistItems: [], // Full array of watchlist anime objects
+    watchlistItems: [],
     scheduleData: {},
     isLoading: false,
     isSyncingWatchlist: false,
     error: null
   };
 
+  // Clean old/corrupted storage keys from previous versions
+  async function cleanupLegacyStorage() {
+    try {
+      if (ext && ext.storage && ext.storage.local) {
+        await ext.storage.local.remove([
+          "croptix_v4_watchlist_ids",
+          "croptix_v4_watchlist_titles",
+          "croptix_v4_watchlist_slugs",
+          "croptix_v4_watchlist_items",
+          "croptix_watchlist_ids",
+          "croptix_watchlist_titles",
+          "croptix_watchlist_items"
+        ]);
+      }
+    } catch (_) {}
+  }
+
   // Load saved watchlist from storage
   async function loadWatchlist() {
     try {
       const res = await ext.storage.local.get([
-        "croptix_v4_watchlist_ids",
-        "croptix_v4_watchlist_titles",
-        "croptix_v4_watchlist_slugs",
-        "croptix_v4_watchlist_items"
+        "croptix_v5_watchlist_ids",
+        "croptix_v5_watchlist_titles",
+        "croptix_v5_watchlist_slugs",
+        "croptix_v5_watchlist_items"
       ]);
-      if (res && Array.isArray(res.croptix_v4_watchlist_ids)) {
-        state.watchlistIds = new Set(res.croptix_v4_watchlist_ids);
-      }
-      if (res && Array.isArray(res.croptix_v4_watchlist_titles)) {
-        state.watchlistTitles = new Set(res.croptix_v4_watchlist_titles);
-      }
-      if (res && Array.isArray(res.croptix_v4_watchlist_slugs)) {
-        state.watchlistSlugs = new Set(res.croptix_v4_watchlist_slugs);
-      }
-      if (res && Array.isArray(res.croptix_v4_watchlist_items)) {
-        state.watchlistItems = res.croptix_v4_watchlist_items;
+      if (res && Array.isArray(res.croptix_v5_watchlist_items)) {
+        state.watchlistItems = res.croptix_v5_watchlist_items;
+        state.watchlistIds = new Set(res.croptix_v5_watchlist_ids || []);
+        state.watchlistTitles = new Set(res.croptix_v5_watchlist_titles || []);
+        state.watchlistSlugs = new Set(res.croptix_v5_watchlist_slugs || []);
       }
     } catch (e) {
-      const local = localStorage.getItem("croptix_v4_watchlist_items");
+      const local = localStorage.getItem("croptix_v5_watchlist_items");
       if (local) {
         try { state.watchlistItems = JSON.parse(local); } catch (_) {}
       }
     }
+    rebuildSets();
   }
 
   // Save watchlist
   async function saveWatchlist() {
+    rebuildSets();
     const idsArr = Array.from(state.watchlistIds);
     const titlesArr = Array.from(state.watchlistTitles);
     const slugsArr = Array.from(state.watchlistSlugs);
     try {
       await ext.storage.local.set({
-        croptix_v4_watchlist_ids: idsArr,
-        croptix_v4_watchlist_titles: titlesArr,
-        croptix_v4_watchlist_slugs: slugsArr,
-        croptix_v4_watchlist_items: state.watchlistItems
+        croptix_v5_watchlist_ids: idsArr,
+        croptix_v5_watchlist_titles: titlesArr,
+        croptix_v5_watchlist_slugs: slugsArr,
+        croptix_v5_watchlist_items: state.watchlistItems
       });
     } catch (e) {
-      localStorage.setItem("croptix_v4_watchlist_ids", JSON.stringify(idsArr));
-      localStorage.setItem("croptix_v4_watchlist_titles", JSON.stringify(titlesArr));
-      localStorage.setItem("croptix_v4_watchlist_slugs", JSON.stringify(slugsArr));
-      localStorage.setItem("croptix_v4_watchlist_items", JSON.stringify(state.watchlistItems));
+      localStorage.setItem("croptix_v5_watchlist_ids", JSON.stringify(idsArr));
+      localStorage.setItem("croptix_v5_watchlist_titles", JSON.stringify(titlesArr));
+      localStorage.setItem("croptix_v5_watchlist_slugs", JSON.stringify(slugsArr));
+      localStorage.setItem("croptix_v5_watchlist_items", JSON.stringify(state.watchlistItems));
     }
   }
 
-  // Add/Update anime item in watchlist
-  function addWatchlistEntry(entry) {
-    if (!entry || (!entry.title && !entry.id)) return;
-    let changed = false;
+  function rebuildSets() {
+    state.watchlistIds = new Set();
+    state.watchlistTitles = new Set();
+    state.watchlistSlugs = new Set();
 
-    const id = String(entry.id || "").toUpperCase();
-    const title = String(entry.title || "").trim();
-    const slug = String(entry.slug || "").toLowerCase().trim();
-    const image = String(entry.image || "");
-    const lastWatched = entry.lastWatched || "";
-
-    if (id && !state.watchlistIds.has(id)) {
-      state.watchlistIds.add(id);
-      changed = true;
-    }
-
-    if (title) {
-      const norm = normalizeTitle(title);
-      const normBase = normalizeTitle(getBaseTitle(title));
-      if (norm && !state.watchlistTitles.has(norm)) {
-        state.watchlistTitles.add(norm);
-        changed = true;
-      }
-      if (normBase && normBase.length >= 4 && !state.watchlistTitles.has(normBase)) {
-        state.watchlistTitles.add(normBase);
-        changed = true;
+    for (const item of state.watchlistItems) {
+      if (item.id) state.watchlistIds.add(String(item.id).toUpperCase());
+      if (item.slug) state.watchlistSlugs.add(String(item.slug).toLowerCase());
+      if (item.title) {
+        const norm = normalizeTitle(item.title);
+        if (norm) state.watchlistTitles.add(norm);
+        const base = normalizeTitle(getBaseTitle(item.title));
+        if (base && base.length >= 4) state.watchlistTitles.add(base);
       }
     }
+  }
 
-    if (slug && !state.watchlistSlugs.has(slug)) {
-      state.watchlistSlugs.add(slug);
-      changed = true;
-    }
+  // Set items from API or DOM
+  function setWatchlistItems(items, replace = false) {
+    if (!Array.isArray(items) || items.length === 0) return;
 
-    // Check existing item in array
-    const idx = state.watchlistItems.findIndex(it => (id && it.id === id) || (title && it.title === title));
-    if (idx < 0) {
-      state.watchlistItems.push({
-        id,
-        title,
-        slug,
-        image,
-        lastWatched,
-        url: id ? `https://www.crunchyroll.com/series/${id}/${slug}` : `https://www.crunchyroll.com/search?q=${encodeURIComponent(title)}`
-      });
-      changed = true;
+    if (replace) {
+      state.watchlistItems = items;
     } else {
-      // Update image / url if empty
-      if (!state.watchlistItems[idx].image && image) {
-        state.watchlistItems[idx].image = image;
-        changed = true;
-      }
-      if (!state.watchlistItems[idx].lastWatched && lastWatched) {
-        state.watchlistItems[idx].lastWatched = lastWatched;
-        changed = true;
+      for (const entry of items) {
+        const id = String(entry.id || "").toUpperCase();
+        const title = String(entry.title || "").trim();
+        const existingIdx = state.watchlistItems.findIndex(
+          it => (id && it.id === id) || (title && it.title === title)
+        );
+        if (existingIdx >= 0) {
+          state.watchlistItems[existingIdx] = { ...state.watchlistItems[existingIdx], ...entry };
+        } else {
+          state.watchlistItems.push(entry);
+        }
       }
     }
 
-    if (changed) {
-      saveWatchlist();
+    saveWatchlist();
+    if (state.isOpen) {
+      renderCalendarUI();
     }
   }
 
-  // Trigger dynamic watchlist fetch from Crunchyroll API and DOM
+  // Trigger dynamic watchlist fetch from Crunchyroll API
   function syncWatchlistFromCrunchyroll() {
     state.isSyncingWatchlist = true;
-    window.dispatchEvent(new CustomEvent("croptix:request-watchlist-fetch"));
-    scanCurrentWatchlistDOM();
+    window.postMessage({ type: "CROPTIX_REQUEST_WATCHLIST" }, "*");
+
+    if (window.location.pathname.includes("/watchlist") || window.location.pathname.includes("/crunchylists")) {
+      scanCurrentWatchlistDOM();
+    }
+
     setTimeout(() => {
       state.isSyncingWatchlist = false;
       renderCalendarUI();
-    }, 1200);
+    }, 1500);
   }
 
-  // Scan current active DOM if on /watchlist or if cards are on page
+  // Scan current active DOM ONLY if on /watchlist or /crunchylists
   function scanCurrentWatchlistDOM() {
+    if (!window.location.pathname.includes("/watchlist") && !window.location.pathname.includes("/crunchylists")) {
+      return;
+    }
+
     const cards = document.querySelectorAll(
-      ".playable-card--GnRbX, .browse-card--esJdT, .watchlist-card, .erc-watchlist-item, [data-t='watchlist-card'], .card"
+      ".watchlist-card, .erc-watchlist-item, [data-t='watchlist-card'], .playable-card--GnRbX, .browse-card--esJdT"
     );
+
+    const scraped = [];
     cards.forEach(card => {
       const titleElem = card.querySelector(
-        "h4, h3, h2, .playable-card__title, .browse-card__title, .title, .text--is-m--pqi45, [data-t='watchlist-card-title']"
+        "h4, h3, h2, .playable-card__title, .browse-card__title, .title, [data-t='watchlist-card-title']"
       );
       const title = titleElem ? titleElem.textContent.trim() : "";
       const linkElem = card.querySelector("a[href*='/series/'], a[href*='/watch/']");
@@ -202,24 +209,35 @@
       const id = idMatch ? idMatch[1] : "";
       const slug = slugMatch ? slugMatch[1] : "";
 
-      const progressElem = card.querySelector(".playable-card__sub-title, .playable-card__playback-progress, .text--is-s--A9zH8");
-      const lastWatched = progressElem ? progressElem.textContent.trim() : "";
+      const progressElem = card.querySelector(".playable-card__sub-title, .playable-card__playback-progress");
+      const lastWatched = progressElem ? progressElem.textContent.trim() : "Na Watchlist";
 
       if (title || id) {
-        addWatchlistEntry({ id, title, slug, image, lastWatched });
+        scraped.push({
+          id: String(id || "").toUpperCase(),
+          title: String(title || "").trim(),
+          slug: String(slug || "").toLowerCase().trim(),
+          image,
+          lastWatched,
+          url: id ? `https://www.crunchyroll.com/series/${id}/${slug}` : `https://www.crunchyroll.com/search?q=${encodeURIComponent(title)}`
+        });
       }
     });
+
+    if (scraped.length > 0) {
+      setWatchlistItems(scraped, true);
+    }
   }
 
   // Check if an anime matches the user's Watchlist
   function isAnimeInWatchlist(media) {
     if (!media) return false;
 
-    // 1. Direct Crunchyroll series ID in external links
+    // 1. Match series ID in external links
     if (media.externalLinks && Array.isArray(media.externalLinks)) {
       for (const link of media.externalLinks) {
-        const match = link.url?.match(/series\/([a-z0-9]+)/i);
-        if (match && match[1] && state.watchlistIds.has(match[1].toUpperCase())) return true;
+        const idMatch = link.url?.match(/series\/([a-z0-9]+)/i);
+        if (idMatch && idMatch[1] && state.watchlistIds.has(idMatch[1].toUpperCase())) return true;
         const slugMatch = link.url?.match(/series\/[a-z0-9]+\/([a-z0-9\-]+)/i);
         if (slugMatch && slugMatch[1] && state.watchlistSlugs.has(slugMatch[1].toLowerCase())) return true;
       }
@@ -230,24 +248,17 @@
       media.title?.userPreferred,
       media.title?.english,
       media.title?.romaji,
-      media.title?.native
+      media.title?.native,
+      ...(Array.isArray(media.synonyms) ? media.synonyms : [])
     ].filter(Boolean);
 
     for (const raw of titlesToCheck) {
       const norm = normalizeTitle(raw);
       if (norm && state.watchlistTitles.has(norm)) return true;
 
-      const baseNorm = normalizeTitle(getBaseTitle(raw));
-      if (baseNorm && baseNorm.length >= 4 && state.watchlistTitles.has(baseNorm)) return true;
-    }
-
-    // 3. Synonyms Matches
-    if (Array.isArray(media.synonyms)) {
-      for (const s of media.synonyms) {
-        const norm = normalizeTitle(s);
-        if (norm && state.watchlistTitles.has(norm)) return true;
-        const baseNorm = normalizeTitle(getBaseTitle(s));
-        if (baseNorm && baseNorm.length >= 4 && state.watchlistTitles.has(baseNorm)) return true;
+      for (const w of state.watchlistTitles) {
+        if (w.length >= 5 && (norm.startsWith(w) || norm.includes(w))) return true;
+        if (norm.length >= 5 && (w.startsWith(norm) || w.includes(norm))) return true;
       }
     }
 
@@ -504,14 +515,14 @@
               </div>
               <div class="croptix-calendar-title-text">
                 <h2>Calendário de Lançamentos</h2>
-                <p>Datas e horários dos animes da tua lista de visionamento</p>
+                <p>Datas e horários dos teus animes na Crunchyroll</p>
               </div>
             </div>
 
             <div class="croptix-filter-tabs">
               <button class="croptix-filter-btn ${state.activeTab === 'watchlist' ? 'active' : ''}" data-tab="watchlist">
                 ${ICONS.starFilled}
-                <span>Lista de Visionamento (${state.watchlistItems.length || state.watchlistTitles.size})</span>
+                <span id="croptix-tab-watchlist-text">Lista de Visionamento (${state.watchlistItems.length})</span>
               </button>
               <button class="croptix-filter-btn ${state.activeTab === 'all' ? 'active' : ''}" data-tab="all">
                 ${ICONS.globe}
@@ -521,9 +532,13 @@
           </div>
 
           <div class="croptix-calendar-header-right">
-            <button class="croptix-sync-btn" id="croptix-sync-btn" title="Atualizar a partir de https://www.crunchyroll.com/pt-pt/watchlist">
+            <button class="croptix-header-btn" id="croptix-manage-btn" title="Gerir ou adicionar animes manualmente">
+              ${ICONS.edit}
+              <span>Gerir Animes</span>
+            </button>
+            <button class="croptix-header-btn" id="croptix-sync-btn" title="Sincronizar com a conta Crunchyroll">
               ${ICONS.refresh}
-              <span>Sincronizar Watchlist</span>
+              <span>Sincronizar</span>
             </button>
             <div class="croptix-search-wrapper">
               <span class="croptix-search-icon">${ICONS.search}</span>
@@ -548,7 +563,7 @@
             <button class="croptix-week-today-btn" id="croptix-week-today">Hoje</button>
           </div>
 
-          <div class="croptix-mode-tabs">
+          <div class="croptix-mode-tabs" id="croptix-subview-container">
             <button class="croptix-subview-btn ${state.subView === 'all_shows' ? 'active' : ''}" id="croptix-subview-all">Todos os Meus Animes</button>
             <button class="croptix-subview-btn ${state.subView === 'days' ? 'active' : ''}" id="croptix-subview-days">Por Dia da Semana</button>
           </div>
@@ -559,10 +574,43 @@
         </div>
 
         <!-- Day Strip -->
-        <div class="croptix-day-strip" id="croptix-day-strip" style="${state.subView === 'all_shows' ? 'display:none;' : ''}"></div>
+        <div class="croptix-day-strip" id="croptix-day-strip" style="${state.subView === 'all_shows' && state.activeTab === 'watchlist' ? 'display:none;' : ''}"></div>
 
         <!-- Body / Content -->
         <div class="croptix-calendar-body" id="croptix-calendar-body"></div>
+
+        <!-- Manager Drawer -->
+        <div class="croptix-manager-drawer" id="croptix-manager-drawer">
+          <div class="croptix-manager-header">
+            <h3>Gerir Lista de Visionamento</h3>
+            <button class="croptix-close-btn" id="croptix-manager-close">${ICONS.close}</button>
+          </div>
+          <div class="croptix-manager-content">
+            <div class="croptix-manager-add-box">
+              <label style="font-size:11px;font-weight:700;color:#dadada;">Adicionar Anime por Nome:</label>
+              <div style="display:flex;gap:6px;">
+                <input type="text" id="croptix-add-title-input" class="croptix-manager-input" placeholder="Ex: Jujutsu Kaisen" style="flex:1;">
+                <button class="croptix-empty-btn" id="croptix-add-title-btn" style="padding:6px 12px;font-size:11px;">+ Adicionar</button>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <span style="font-size:11px;font-weight:700;color:#aaa;">Animes na Lista (<span id="croptix-manager-count">${state.watchlistItems.length}</span>):</span>
+              <button id="croptix-clear-all-btn" style="background:none;border:none;color:#ff5555;font-size:10px;cursor:pointer;text-decoration:underline;">Limpar Tudo</button>
+            </div>
+
+            <div class="croptix-manager-list" id="croptix-manager-list"></div>
+
+            <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;">
+              <button class="croptix-empty-btn" id="croptix-open-watchlist-btn" style="background:#2a2b30;justify-content:center;">
+                📑 Abrir Watchlist na Crunchyroll
+              </button>
+              <button class="croptix-empty-btn" id="croptix-manager-sync-btn" style="justify-content:center;">
+                🔄 Sincronizar da Conta
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     `;
 
@@ -579,12 +627,72 @@
       syncWatchlistFromCrunchyroll();
     });
 
+    // Manager toggle
+    const managerDrawer = backdrop.querySelector("#croptix-manager-drawer");
+    backdrop.querySelector("#croptix-manage-btn").addEventListener("click", () => {
+      state.isManagerOpen = !state.isManagerOpen;
+      managerDrawer.classList.toggle("open", state.isManagerOpen);
+      renderManagerList();
+    });
+    backdrop.querySelector("#croptix-manager-close").addEventListener("click", () => {
+      state.isManagerOpen = false;
+      managerDrawer.classList.remove("open");
+    });
+    backdrop.querySelector("#croptix-manager-sync-btn").addEventListener("click", () => {
+      syncWatchlistFromCrunchyroll();
+      renderManagerList();
+    });
+    backdrop.querySelector("#croptix-open-watchlist-btn").addEventListener("click", () => {
+      window.open("https://www.crunchyroll.com/pt-pt/watchlist", "_blank");
+    });
+
+    // Add title button
+    backdrop.querySelector("#croptix-add-title-btn").addEventListener("click", () => {
+      const input = backdrop.querySelector("#croptix-add-title-input");
+      const val = input.value.trim();
+      if (val) {
+        setWatchlistItems([{
+          id: "",
+          title: val,
+          slug: "",
+          image: "",
+          lastWatched: "Adicionado",
+          url: `https://www.crunchyroll.com/search?q=${encodeURIComponent(val)}`
+        }], false);
+        input.value = "";
+        renderManagerList();
+        renderCalendarUI();
+      }
+    });
+
+    // Clear all button
+    backdrop.querySelector("#croptix-clear-all-btn").addEventListener("click", () => {
+      if (confirm("Tens a certeza que queres limpar a lista de animes guardada na extensão?")) {
+        state.watchlistItems = [];
+        state.watchlistIds.clear();
+        state.watchlistTitles.clear();
+        state.watchlistSlugs.clear();
+        saveWatchlist();
+        renderManagerList();
+        renderCalendarUI();
+      }
+    });
+
     const filterBtns = backdrop.querySelectorAll(".croptix-filter-btn");
     filterBtns.forEach(btn => {
       btn.addEventListener("click", () => {
         filterBtns.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         state.activeTab = btn.dataset.tab;
+        const strip = document.getElementById("croptix-day-strip");
+        const subviewCont = document.getElementById("croptix-subview-container");
+        if (state.activeTab === "all") {
+          strip.style.display = "grid";
+          subviewCont.style.display = "none";
+        } else {
+          subviewCont.style.display = "flex";
+          strip.style.display = state.subView === "all_shows" ? "none" : "grid";
+        }
         renderCalendarUI();
       });
     });
@@ -631,7 +739,12 @@
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && state.isOpen) {
-        closeCalendar();
+        if (state.isManagerOpen) {
+          state.isManagerOpen = false;
+          managerDrawer.classList.remove("open");
+        } else {
+          closeCalendar();
+        }
       }
       if (e.altKey && (e.key === "c" || e.key === "C")) {
         toggleCalendar();
@@ -639,6 +752,39 @@
     });
 
     return backdrop;
+  }
+
+  // Render Manager List
+  function renderManagerList() {
+    const list = document.getElementById("croptix-manager-list");
+    const count = document.getElementById("croptix-manager-count");
+    if (!list) return;
+
+    if (count) count.textContent = state.watchlistItems.length;
+
+    if (state.watchlistItems.length === 0) {
+      list.innerHTML = `<div style="font-size:11px;color:#888;text-align:center;padding:12px;">Nenhum anime na lista.<br>Clica em "Sincronizar da Conta" ou adiciona acima.</div>`;
+      return;
+    }
+
+    list.innerHTML = state.watchlistItems.map((it, idx) => `
+      <div class="croptix-manager-item">
+        <span class="croptix-manager-item-name" title="${it.title}">${it.title}</span>
+        <button class="croptix-manager-item-del" data-idx="${idx}" title="Remover da lista">✕</button>
+      </div>
+    `).join("");
+
+    list.querySelectorAll(".croptix-manager-item-del").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < state.watchlistItems.length) {
+          state.watchlistItems.splice(idx, 1);
+          saveWatchlist();
+          renderManagerList();
+          renderCalendarUI();
+        }
+      });
+    });
   }
 
   // Update Week
@@ -694,6 +840,10 @@
   // Render Day Content / All Shows Content
   function renderDayContent() {
     const body = document.getElementById("croptix-calendar-body");
+    const tabText = document.getElementById("croptix-tab-watchlist-text");
+    if (tabText) {
+      tabText.textContent = `Lista de Visionamento (${state.watchlistItems.length})`;
+    }
     if (!body) return;
 
     if (state.isLoading) {
@@ -707,9 +857,7 @@
 
     // View: All Watchlist Shows
     if (state.activeTab === "watchlist" && state.subView === "all_shows") {
-      let items = state.watchlistItems.length > 0
-        ? state.watchlistItems
-        : Array.from(state.watchlistTitles).map(t => ({ title: t, id: "", url: `https://www.crunchyroll.com/search?q=${encodeURIComponent(t)}` }));
+      let items = state.watchlistItems;
 
       if (state.searchQuery.trim()) {
         const q = state.searchQuery.toLowerCase().trim();
@@ -720,16 +868,25 @@
         body.innerHTML = `
           <div class="croptix-empty-state">
             <div class="croptix-empty-icon">${ICONS.starFilled}</div>
-            <h3 class="croptix-empty-title">A carregar animes da tua Lista de Visionamento...</h3>
+            <h3 class="croptix-empty-title">Nenhum anime na tua Lista de Visionamento</h3>
             <p class="croptix-empty-desc">
-              Clica no botão <strong>"Sincronizar Watchlist"</strong> no topo para sincronizar os animes de <a href="https://www.crunchyroll.com/pt-pt/watchlist" target="_blank" style="color:#ff6400;">crunchyroll.com/pt-pt/watchlist</a>!
+              A extensão pode sincronizar diretamente com a tua conta Crunchyroll ou podes adicionar animes manualmente.
             </p>
-            <button class="croptix-empty-btn" id="croptix-force-sync-btn">🔄 Sincronizar Agora</button>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+              <button class="croptix-empty-btn" id="croptix-force-sync-btn">🔄 Sincronizar da Crunchyroll</button>
+              <button class="croptix-empty-btn" style="background:#2d3038;" id="croptix-empty-manage-btn">✏️ Adicionar / Gerir Animes</button>
+            </div>
           </div>
         `;
         const syncBtn = body.querySelector("#croptix-force-sync-btn");
-        if (syncBtn) {
-          syncBtn.addEventListener("click", () => syncWatchlistFromCrunchyroll());
+        if (syncBtn) syncBtn.addEventListener("click", () => syncWatchlistFromCrunchyroll());
+        const manageBtn = body.querySelector("#croptix-empty-manage-btn");
+        if (manageBtn) {
+          manageBtn.addEventListener("click", () => {
+            state.isManagerOpen = true;
+            document.getElementById("croptix-manager-drawer")?.classList.add("open");
+            renderManagerList();
+          });
         }
         return;
       }
@@ -753,7 +910,7 @@
         ));
 
         let badgeText = lastWatched;
-        let timeLabel = "Disponível no Crunchyroll";
+        let timeLabel = "Disponível na Crunchyroll";
         let timeClass = "";
 
         if (matchSchedule) {
@@ -800,7 +957,7 @@
             <div class="croptix-empty-icon">${ICONS.starFilled}</div>
             <h3 class="croptix-empty-title">Nenhum episódio da tua lista programado para este dia</h3>
             <p class="croptix-empty-desc">
-              Não há transmissões agendadas para os animes da tua lista de visionamento nesta data.<br>
+              Não há transmissões agendadas para os teus animes nesta data.<br>
               Clica em <strong>"Todos os Meus Animes"</strong> para consultar toda a tua lista de visionamento, ou alterna para <strong>"Todos os Lançamentos"</strong>!
             </p>
             <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
@@ -813,8 +970,8 @@
         if (allShowsBtn) {
           allShowsBtn.addEventListener("click", () => {
             state.subView = "all_shows";
-            document.getElementById("croptix-subview-all").classList.add("active");
-            document.getElementById("croptix-subview-days").classList.remove("active");
+            document.getElementById("croptix-subview-all")?.classList.add("active");
+            document.getElementById("croptix-subview-days")?.classList.remove("active");
             document.getElementById("croptix-day-strip").style.display = "none";
             renderCalendarUI();
           });
@@ -827,6 +984,8 @@
             filterBtns.forEach(b => {
               b.classList.toggle("active", b.dataset.tab === "all");
             });
+            document.getElementById("croptix-day-strip").style.display = "grid";
+            document.getElementById("croptix-subview-container").style.display = "none";
             renderCalendarUI();
           });
         }
@@ -910,6 +1069,8 @@
       backdrop.classList.remove("croptix-open");
     }
     state.isOpen = false;
+    state.isManagerOpen = false;
+    document.getElementById("croptix-manager-drawer")?.classList.remove("open");
     document.body.style.overflow = "";
   }
 
@@ -928,12 +1089,10 @@
 
     let navBtn;
     if (siblingLink) {
-      // Clone sibling element so it inherits EXACT tags, classes, computed typography and styling
       navBtn = siblingLink.cloneNode(true);
       navBtn.id = "croptix-header-calendar-link";
-      navBtn.className = `${siblingLink.className} croptix-calendar-nav-btn`;
+      navBtn.classList.add("croptix-calendar-nav-btn");
       navBtn.removeAttribute("href");
-      navBtn.style.cursor = "pointer";
 
       // Replace inner text with "Calendário"
       const textSpan = navBtn.querySelector("span, div, p");
@@ -971,18 +1130,28 @@
   }
 
   // Initialize Calendar
-  function init() {
-    loadWatchlist();
+  async function init() {
+    await cleanupLegacyStorage();
+    await loadWatchlist();
     injectHeaderNavButton();
     syncWatchlistFromCrunchyroll();
 
-    // Listen for custom watchlist events dispatched by crunchyroll.js
-    window.addEventListener("croptix:watchlist-sync", (e) => {
-      if (Array.isArray(e.detail)) {
-        for (const it of e.detail) {
-          addWatchlistEntry(it);
-        }
+    // Listen for custom postMessage events from crunchyroll.js
+    window.addEventListener("message", (event) => {
+      if (event.source !== window || !event.data) return;
+      if (event.data.type === "CROPTIX_WATCHLIST_DATA" && Array.isArray(event.data.items)) {
+        setWatchlistItems(event.data.items, event.data.replace ?? false);
       }
+    });
+
+    // Listen for custom DOM events
+    document.addEventListener("croptix:watchlist-sync", (e) => {
+      try {
+        const data = typeof e.detail === "string" ? JSON.parse(e.detail) : e.detail;
+        if (Array.isArray(data)) {
+          setWatchlistItems(data, true);
+        }
+      } catch (_) {}
     });
 
     // DOM Observer for SPA changes
@@ -990,7 +1159,7 @@
       if (!document.getElementById("croptix-header-calendar-link")) {
         injectHeaderNavButton();
       }
-      if (window.location.pathname.includes("/watchlist")) {
+      if (window.location.pathname.includes("/watchlist") || window.location.pathname.includes("/crunchylists")) {
         scanCurrentWatchlistDOM();
       }
     });
