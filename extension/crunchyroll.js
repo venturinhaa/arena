@@ -20,11 +20,16 @@ function notifyWatchlistItems(items){
       const title = panel.title || panel.series_title || (panel.series_metadata && panel.series_metadata.series_title);
       const id = panel.id || panel.series_id || it.id;
       const slug = panel.slug_title || (panel.series_metadata && panel.series_metadata.slug_title);
+      const images = panel.images || (panel.series_metadata && panel.series_metadata.images);
+      const posterUrl = images?.poster_tall?.[0]?.source || images?.poster_wide?.[0]?.source || "";
+      const lastWatched = it.last_public_head_played_episode_id || it.playhead || null;
       if (title || id) {
         extracted.push({
           id: String(id || "").toUpperCase(),
           title: String(title || ""),
-          slug: String(slug || "")
+          slug: String(slug || ""),
+          image: posterUrl,
+          lastWatched
         });
       }
     }
@@ -34,35 +39,58 @@ function notifyWatchlistItems(items){
   } catch (_) {}
 }
 
-// Global helper to trigger active watchlist fetch from Crunchyroll
-window.__croptix_fetch_watchlist = async function() {
+async function fetchWatchlistFromApi() {
   try {
-    const urls = [
-      `/content/v2/discover/${savedAccountId ? savedAccountId + '/' : ''}watchlist?n=100`,
+    let auth = savedAuthHeader || window.__CROPTIX_AUTH_HEADER__;
+    if (!auth) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const val = localStorage.getItem(key);
+        if (val && typeof val === "string" && val.includes("Bearer ")) {
+          const match = val.match(/Bearer\s+([a-zA-Z0-9_\-\.]+)/);
+          if (match) { auth = "Bearer " + match[1]; break; }
+        }
+      }
+    }
+    const headers = { "accept": "application/json" };
+    if (auth) headers["authorization"] = auth;
+
+    const endpoints = [
+      `/content/v2/discover/${savedAccountId ? savedAccountId + '/' : ''}watchlist?locale=pt-PT&n=100`,
+      `/content/v2/discover/watchlist?locale=pt-PT&n=100`,
       `/content/v2/discover/watchlist?n=100`
     ];
-    for (const u of urls) {
+
+    for (const ep of endpoints) {
       try {
-        const headers = { "accept": "application/json" };
-        if (savedAuthHeader) headers["authorization"] = savedAuthHeader;
-        const res = await h.call(window, u, { credentials: "same-origin", headers });
+        const res = await h.call(window, ep, { headers, credentials: "same-origin" });
         if (res.ok) {
           const json = await res.json();
-          if (json?.data) { notifyWatchlistItems(json.data); return json.data; }
-          if (json?.items) { notifyWatchlistItems(json.items); return json.items; }
+          const items = json.data || json.items || [];
+          if (items.length > 0) {
+            notifyWatchlistItems(items);
+            return items;
+          }
         }
       } catch (_) {}
     }
   } catch (_) {}
-};
+}
+
+window.addEventListener("croptix:request-watchlist-fetch", fetchWatchlistFromApi);
 
 if(typeof h==="function")window.fetch=function(...t){let n;try{let s=t[0],o=typeof Request<"u"&&s instanceof Request,c=new Headers(o?s.headers:void 0);if(t[1]?.headers)new Headers(t[1].headers).forEach((l,d)=>c.set(d,l));
-// Capture Auth header
 const auth = c.get("authorization");
-if (auth && auth.startsWith("Bearer ")) savedAuthHeader = auth;
+if (auth && auth.startsWith("Bearer ")) {
+  savedAuthHeader = auth;
+  window.__CROPTIX_AUTH_HEADER__ = auth;
+}
 const urlStr = String(o ? s.url : (typeof s === 'string' ? s : ''));
 const accMatch = urlStr.match(/\/discover\/([a-zA-Z0-9_\-]+)\/watchlist/);
-if (accMatch && accMatch[1]) savedAccountId = accMatch[1];
+if (accMatch && accMatch[1]) {
+  savedAccountId = accMatch[1];
+  window.__CROPTIX_ACCOUNT_ID__ = accMatch[1];
+}
 n=O(o?s.url:s,c)}catch(s){return console.warn("[CrOptix] Failed to inspect a Crunchyroll fetch request.",s),h.apply(this,t)}let e=h.apply(this,t);
 
 // Intercept genuine Watchlist API responses

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Crunchyroll Enhancer – CrOptix",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "Crunchyroll improvements and fixes",
   "homepage_url": "https://github.com/stratumadev/croptix",
   "permissions": [
